@@ -1,0 +1,19 @@
+[package]
+name = "blobstore-rs"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib", "rlib"]
+
+[dependencies]
+anyhow = "1.0.86"
+cxx = { version = "1.0.128", feature = "c++20" }
+oneshot = "0.1.8"
+
+[profile.relwithdebinfo]
+inherits = "release"
+debug = true
+
+[build-dependencies]
+cxx-build = "1.0"
