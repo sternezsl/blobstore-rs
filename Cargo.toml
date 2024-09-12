@@ -9,6 +9,7 @@ crate-type = ["staticlib", "rlib"]
 [dependencies]
 anyhow = "1.0.86"
 cxx = { version = "1.0.128", feature = "c++20" }
+cxx-async = { path = "./cxx-async/cxx-async" }
 oneshot = "0.1.8"
 
 [profile.relwithdebinfo]

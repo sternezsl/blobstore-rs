@@ -6,6 +6,7 @@ fn main() {
         .file("blobstore/blobstore.cc")
         .std("c++20")
         .include("./")
+        .include("./cxx-async/cxx-async/include")
         .flag("-DFMT_HEADER_ONLY")
         .flag("-DUSE_FOLLY_LOGGING")
         .flag("-Wno-nullability-completeness")

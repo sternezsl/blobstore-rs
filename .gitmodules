@@ -1,0 +1,4 @@
+[submodule "cxx-async"]
+	path = cxx-async
+	url = https://github.com/sternezsl/cxx-async.git
+	branch = fix-aarch64-vtable-func-ptrs

@@ -26,5 +26,12 @@ pub async fn put_coro(
 pub fn next_chunk(buf: &mut ffi::MultiBuf) -> &[u8] {
     let next = buf.chunks.get(buf.pos);
     buf.pos += 1;
-    next.map_or(&[], |arg: &ffi::VecU8| arg.value.as_slice())
+    next.map_or(&[], |arg| Vec::as_slice(&arg.value))
 }
+
+// pub async fn put_async(
+//     client: &cxx::SharedPtr<ffi::BlobstoreClient>,
+//     parts: &mut ffi::MultiBuf,
+// ) -> Result<u64> {
+//     Ok(bridge::ffi::put_async(client, parts).await?)
+// }

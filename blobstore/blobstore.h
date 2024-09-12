@@ -1,7 +1,12 @@
 #pragma once
 #include <memory>
-#include <folly/coro/Task.h>
+#include <folly/experimental/coro/Task.h>
 #include "rust/cxx.h"
+#include "rust/cxx_async.h"
+
+CXXASYNC_DEFINE_FUTURE(uint64_t, org, blobstore, RustFutureU64);
+
+namespace org::blobstore {
 
 struct BlobMetadata;
 struct MultiBuf;
@@ -28,3 +33,8 @@ void put_coro(
     rust::Fn<void(rust::Box<BlobTx> ctx, std::uint64_t ret)> ok,
     rust::Fn<void(rust::Box<BlobTx> ctx, const std::string& exn)> fail,
     rust::Box<BlobTx> ctx) noexcept;
+
+RustFutureU64 put_async(
+    const std::shared_ptr<BlobstoreClient>& client,
+    MultiBuf& buf);
+} // namespace org::blobstore

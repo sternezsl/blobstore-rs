@@ -1,7 +1,8 @@
 use crate::next_chunk;
 use crate::BlobTx;
+use std::future::Future;
 
-#[cxx::bridge]
+#[cxx::bridge(namespace=org::blobstore)]
 pub mod ffi {
     struct BlobMetadata {
         size: usize,
@@ -37,4 +38,14 @@ pub mod ffi {
             tx: Box<BlobTx>,
         );
     }
+
+    unsafe extern "C++" {
+        type RustFutureU64 = crate::bridge::RustFutureU64;
+        fn put_async(client: &SharedPtr<BlobstoreClient>, arg: &mut MultiBuf) -> RustFutureU64;
+    }
+}
+
+#[cxx_async::bridge(namespace=org::blobstore)]
+unsafe impl Future for RustFutureU64 {
+    type Output = u64;
 }

@@ -6,13 +6,14 @@
 #include <unordered_map>
 #include "blobstore-rs/src/bridge.rs.h"
 
-#include <folly/coro/BlockingWait.h>
-#include <folly/coro/Collect.h>
+#include <folly/experimental/coro/BlockingWait.h>
+#include <folly/experimental/coro/Collect.h>
 #include <folly/futures/Future.h>
 #include <folly/init/Init.h>
 #include <folly/logging/xlog.h>
+#include "rust/cxx_async_folly.h"
 
-using std::uint64_t;
+namespace org::blobstore {
 
 class BlobstoreClient::Impl {
  private:
@@ -25,10 +26,11 @@ class BlobstoreClient::Impl {
   std::mutex mtx_;
 
  public:
-  void insert_blob(std::string&& contents) {
+  size_t insert_blob(std::string&& contents) {
     auto blobid = std::hash<std::string>{}(contents);
     std::lock_guard<std::mutex> lock(mtx_);
     blobs_.emplace(blobid, Blob{std::move(contents), {}});
+    return blobid;
   }
 };
 
@@ -66,15 +68,14 @@ folly::coro::Task<uint64_t>
   std::string contents;
   while (true) {
     auto chunk = next_chunk(buf);
-    if (!chunk.empty()) {
+    if (chunk.empty()) {
       break;
     }
-    contents.append(reinterpret_cast<const char*>(chunk.data()), chunk.size());
+    contents.append(std::begin(chunk), std::end(chunk));
   }
-  auto blobid = std::hash<std::string>{}(contents);
-  impl_->insert_blob(std::move(contents));
-  XLOGF(INFO, "blobid: {}", blobid);
-  co_return blobid;
+  auto blob_id = impl_->insert_blob(std::move(contents));
+  XLOGF(INFO, "blobid: {}", blob_id);
+  co_return blob_id;
 }
 
 void put_coro(
@@ -101,3 +102,10 @@ uint64_t BlobstoreClient::put(MultiBuf& buf) const {
   return folly::coro::blockingWait(
       put_coro(buf).scheduleOn(folly::getGlobalCPUExecutor()));
 }
+
+RustFutureU64 put_async(
+    const std::shared_ptr<BlobstoreClient>& client, MultiBuf& buf) {
+  co_return co_await client->put_coro(buf);
+}
+
+} // namespace org::blobstore
